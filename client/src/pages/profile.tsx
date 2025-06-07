@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, queryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -65,15 +66,15 @@ export default function Profile() {
 
   // Update form when profile data loads
   useEffect(() => {
-    if (profile) {
+    if (profile && typeof profile === 'object') {
       form.reset({
-        displayName: profile.displayName || '',
-        age: profile.age || 18,
-        bio: profile.bio || '',
-        location: profile.location || '',
-        height: profile.height || '',
-        bodyType: profile.bodyType || '',
-        lookingFor: profile.lookingFor || 'Chat',
+        displayName: (profile as any).displayName || '',
+        age: (profile as any).age || 18,
+        bio: (profile as any).bio || '',
+        location: (profile as any).location || '',
+        height: (profile as any).height || '',
+        bodyType: (profile as any).bodyType || '',
+        lookingFor: (profile as any).lookingFor || 'Chat',
       });
     }
   }, [profile, form]);
@@ -146,9 +147,9 @@ export default function Profile() {
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative">
                   <div className="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-                    {user?.profileImageUrl ? (
+                    {(user as any)?.profileImageUrl ? (
                       <img 
-                        src={user.profileImageUrl} 
+                        src={(user as any).profileImageUrl} 
                         alt="Profile" 
                         className="w-full h-full object-cover"
                       />
@@ -164,8 +165,8 @@ export default function Profile() {
                   </Button>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-xl font-bold">{profile?.displayName || user?.firstName || 'Your Name'}</h2>
-                  <p className="text-gray-400">{profile?.age ? `${profile.age} years old` : 'Age not set'}</p>
+                  <h2 className="text-xl font-bold">{(profile as any)?.displayName || (user as any)?.firstName || 'Your Name'}</h2>
+                  <p className="text-gray-400">{(profile as any)?.age ? `${(profile as any).age} years old` : 'Age not set'}</p>
                 </div>
               </div>
             </CardContent>
@@ -235,6 +236,7 @@ export default function Profile() {
                         <FormControl>
                           <Textarea
                             {...field}
+                            value={field.value || ''}
                             disabled={!isEditing}
                             className="bg-gray-800 border-gray-700"
                             rows={3}

@@ -154,7 +154,7 @@ export class DatabaseStorage implements IStorage {
     ageMax = 65,
     onlineOnly = false
   ): Promise<ProfileWithPhotos[]> {
-    let query = db
+    const result = await db
       .select()
       .from(profiles)
       .leftJoin(photos, eq(photos.profileId, profiles.id))
@@ -164,35 +164,15 @@ export class DatabaseStorage implements IStorage {
           ne(profiles.userId, userId),
           eq(profiles.isVisible, true),
           sql`${profiles.age} BETWEEN ${ageMin} AND ${ageMax}`,
-          onlineOnly ? eq(profiles.isOnline, true) : undefined,
-          // Exclude blocked users
-          notInArray(
-            profiles.userId,
-            db
-              .select({ id: blocks.blockedId })
-              .from(blocks)
-              .where(eq(blocks.blockerId, userId))
-          )
+          onlineOnly ? eq(profiles.isOnline, true) : undefined
         )
-      );
-
-    // Add distance filter if coordinates provided
-    if (latitude !== undefined && longitude !== undefined) {
-      query = query.where(
+      )
+      .orderBy(
         sql`
-          (6371 * acos(cos(radians(${latitude})) * cos(radians(${profiles.latitude})) * 
-          cos(radians(${profiles.longitude}) - radians(${longitude})) + 
-          sin(radians(${latitude})) * sin(radians(${profiles.latitude})))) <= ${maxDistance}
+          CASE WHEN ${profiles.isOnline} = true THEN 0 ELSE 1 END,
+          ${profiles.lastSeen} DESC
         `
       );
-    }
-
-    const result = await query.orderBy(
-      sql`
-        CASE WHEN ${profiles.isOnline} = true THEN 0 ELSE 1 END,
-        ${profiles.lastSeen} DESC
-      `
-    );
 
     // Group by profile
     const profileMap = new Map<number, ProfileWithPhotos>();
@@ -216,11 +196,24 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Sort photos by order
-    for (const profile of profileMap.values()) {
-      profile.photos.sort((a, b) => (a.order || 0) - (b.order || 0));
+    const profilesArray = Array.from(profileMap.values());
+    for (const profile of profilesArray) {
+      profile.photos.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
     }
 
-    return Array.from(profileMap.values());
+    return profilesArray;
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
   }
 
   // Photo operations
