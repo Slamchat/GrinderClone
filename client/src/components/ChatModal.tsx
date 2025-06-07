@@ -113,7 +113,7 @@ export function ChatModal({ open, onClose, userId }: ChatModalProps) {
 
   // Get other user info from first message
   const otherUser = messages.length > 0 
-    ? messages[0].sender.id === user?.id 
+    ? messages[0].sender.id === (user as any)?.id 
       ? messages[0].receiver 
       : messages[0].sender
     : null;
@@ -160,7 +160,7 @@ export function ChatModal({ open, onClose, userId }: ChatModalProps) {
               </div>
             ) : (
               messages.map((message: MessageWithUsers, index: number) => {
-                const isOwn = message.senderId === user?.id;
+                const isOwn = message.senderId === (user as any)?.id;
                 const showTime = index === 0 || 
                   new Date(message.createdAt!).getTime() - new Date(messages[index - 1].createdAt!).getTime() > 300000; // 5 minutes
                 
