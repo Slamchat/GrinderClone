@@ -256,6 +256,7 @@ export default function Profile() {
                         <FormControl>
                           <Input
                             {...field}
+                            value={field.value || ''}
                             disabled={!isEditing}
                             className="bg-gray-800 border-gray-700"
                           />
@@ -274,6 +275,7 @@ export default function Profile() {
                         <FormControl>
                           <Input
                             {...field}
+                            value={field.value || ''}
                             disabled={!isEditing}
                             placeholder="e.g. 6'1&quot;"
                             className="bg-gray-800 border-gray-700"
@@ -290,7 +292,7 @@ export default function Profile() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Body Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!isEditing}>
+                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={!isEditing}>
                           <FormControl>
                             <SelectTrigger className="bg-gray-800 border-gray-700">
                               <SelectValue />
@@ -316,7 +318,7 @@ export default function Profile() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Looking For</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!isEditing}>
+                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={!isEditing}>
                           <FormControl>
                             <SelectTrigger className="bg-gray-800 border-gray-700">
                               <SelectValue />

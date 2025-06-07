@@ -26,7 +26,7 @@ export function ChatModal({ open, onClose, userId }: ChatModalProps) {
   const wsRef = useRef<WebSocket | null>(null);
 
   // Fetch conversation messages
-  const { data: messages = [], refetch } = useQuery({
+  const { data: messages = [], refetch } = useQuery<MessageWithUsers[]>({
     queryKey: ['/api/conversation', userId],
     enabled: open && !!userId,
     retry: false,
@@ -76,7 +76,7 @@ export function ChatModal({ open, onClose, userId }: ChatModalProps) {
       wsRef.current.onopen = () => {
         wsRef.current?.send(JSON.stringify({
           type: 'auth',
-          userId: user.id
+          userId: (user as any)?.id
         }));
       };
 
